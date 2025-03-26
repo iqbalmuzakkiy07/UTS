@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Penjualan Toko Kelontong</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { width: 80%; margin: auto; background: rgb(255, 228, 90); padding: 20px; border-radius: 10px; }
+        h2, h3 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid black; padding: 10px; text-align: left; }
+        th { background-color: #ff9900; color: white; }
+        button { padding: 10px; margin-top: 10px; background-color: #0ed128; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>USAHA KELONTONG MAJU LANCAR</h2>
+        <br>
+        <br>
+
+        <!-- Entri Data Produk -->
+        <h3>Entri Data Produk</h3>
+        <input type="text" id="namaProduk" placeholder="Nama Produk">
+        <input type="number" id="stokProduk" placeholder="Stok">
+        <button onclick="tambahProduk()">Tambah Produk</button>
+        <table id="tabelProduk"><tr><th>Produk</th><th>Stok</th></tr></table>
+
+        <!-- Entri Data Pelanggan -->
+        <h3>Entri Data Pelanggan</h3>
+        <input type="text" id="namaPelanggan" placeholder="Nama Pelanggan">
+        <button onclick="tambahPelanggan()">Tambah Pelanggan</button>
+        <table id="tabelPelanggan"><tr><th>Pelanggan</th></tr></table>
+
+        <!-- Entri Transaksi -->
+        <h3>Entri Transaksi Penjualan</h3>
+        <input type="text" id="transProduk" placeholder="Nama Produk">
+        <input type="number" id="transJumlah" placeholder="Jumlah">
+        <input type="number" id="transHarga" placeholder="Harga Satuan">
+        <button onclick="tambahTransaksi()">Tambah Transaksi</button>
+        <table id="tabelTransaksi"><tr><th>Produk</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Tanggal</th></tr></table>
+        
+        <!-- Rekapitulasi Penjualan -->
+        <h3>Rekapitulasi Penjualan</h3>
+        <h4>Harian</h4>
+        <table id="rekapHarian"><tr><th>Tanggal</th><th>Total Penjualan</th></tr></table>
+        <h4>Bulanan</h4>
+        <table id="rekapBulanan"><tr><th>Bulan</th><th>Total Penjualan</th></tr></table>
+        <h4>Tahunan</h4>
+        <table id="rekapTahunan"><tr><th>Tahun</th><th>Total Penjualan</th></tr></table>
+    </div>
+
+    <script>
+        let produk = [];
+        let pelanggan = [];
+        let transaksi = [];
+
+        function tambahProduk() {
+            let nama = document.getElementById('namaProduk').value;
+            let stok = document.getElementById('stokProduk').value;
+            if (nama && stok) {
+                produk.push({ nama, stok });
+                updateTabelProduk();
+                document.getElementById('namaProduk').value = "";
+                document.getElementById('stokProduk').value = "";
+            }
+        }
+        function updateTabelProduk() {
+            let tabel = document.getElementById('tabelProduk');
+            tabel.innerHTML = '<tr><th>Produk</th><th>Stok</th></tr>' + 
+                produk.map(p => `<tr><td>${p.nama}</td><td>${p.stok}</td></tr>`).join('');
+        }
+        
+        function tambahPelanggan() {
+            let nama = document.getElementById('namaPelanggan').value;
+            if (nama) {
+                pelanggan.push(nama);
+                updateTabelPelanggan();
+                document.getElementById('namaPelanggan').value = "";
+            }
+        }
+        function updateTabelPelanggan() {
+            let tabel = document.getElementById('tabelPelanggan');
+            tabel.innerHTML = '<tr><th>Pelanggan</th></tr>' + 
+                pelanggan.map(p => `<tr><td>${p}</td></tr>`).join('');
+        }
+        
+        function tambahTransaksi() {
+            let produk = document.getElementById('transProduk').value;
+            let jumlah = document.getElementById('transJumlah').value;
+            let harga = document.getElementById('transHarga').value;
+            let total = jumlah * harga;
+            let tanggal = new Date().toLocaleDateString('id-ID');
+            if (produk && jumlah && harga) {
+                transaksi.push({ produk, jumlah, harga, total, tanggal });
+                updateTabelTransaksi();
+                updateRekapitulasi();
+                document.getElementById('transProduk').value = "";
+                document.getElementById('transJumlah').value = "";
+                document.getElementById('transHarga').value = "";
+            }
+        }
+        function updateTabelTransaksi() {
+            let tabel = document.getElementById('tabelTransaksi');
+            tabel.innerHTML = '<tr><th>Produk</th><th>Jumlah</th><th>Harga</th><th>Total</th><th>Tanggal</th></tr>' +
+                transaksi.map(t => `<tr><td>${t.produk}</td><td>${t.jumlah}</td><td>${t.harga}</td><td>${t.total}</td><td>${t.tanggal}</td></tr>`).join('');
+        }
+        
+        function updateRekapitulasi() {
+            let rekapHarian = {};
+            let rekapBulanan = {};
+            let rekapTahunan = {};
+            transaksi.forEach(t => {
+                let [day, month, year] = t.tanggal.split('/');
+                rekapHarian[t.tanggal] = (rekapHarian[t.tanggal] || 0) + t.total;
+                rekapBulanan[`${month}-${year}`] = (rekapBulanan[`${month}-${year}`] || 0) + t.total;
+                rekapTahunan[year] = (rekapTahunan[year] || 0) + t.total;
+            });
+            document.getElementById('rekapHarian').innerHTML += Object.entries(rekapHarian).map(([tgl, total]) => `<tr><td>${tgl}</td><td>${total}</td></tr>`).join('');
+            document.getElementById('rekapBulanan').innerHTML += Object.entries(rekapBulanan).map(([bln, total]) => `<tr><td>${bln}</td><td>${total}</td></tr>`).join('');
+            document.getElementById('rekapTahunan').innerHTML += Object.entries(rekapTahunan).map(([thn, total]) => `<tr><td>${thn}</td><td>${total}</td></tr>`).join('');
+        }
+    </script>
+</body>
+</html>
